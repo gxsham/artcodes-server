@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LinkCraft.Models;
 using LinkCraft.Data;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LinkCraft.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ExperiencesController : ControllerBase

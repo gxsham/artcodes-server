@@ -43,8 +43,7 @@ namespace LinkCraft.Migrations
                     AccessFailedCount = table.Column<int>(nullable: false),
                     Name = table.Column<string>(nullable: true),
                     City = table.Column<string>(nullable: true),
-                    Country = table.Column<string>(nullable: true),
-                    Birthday = table.Column<DateTime>(nullable: false)
+                    Country = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -56,9 +55,9 @@ namespace LinkCraft.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
-                    Code = table.Column<string>(nullable: true),
-                    Url = table.Column<string>(nullable: true),
-                    Username = table.Column<string>(nullable: true)
+                    Code = table.Column<string>(nullable: false),
+                    Url = table.Column<string>(nullable: false),
+                    Username = table.Column<string>(nullable: false)
                 },
                 constraints: table =>
                 {
