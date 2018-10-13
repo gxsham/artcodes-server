@@ -11,6 +11,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Swagger;
+using Microsoft.EntityFrameworkCore;
+using LinkCraft.Models;
+using LinkCraft.Data;
 
 namespace LinkCraft
 {
@@ -36,6 +39,9 @@ namespace LinkCraft
                     Description = "API Description for LinkCraft backend",
                     Version = "v1" });
             });
+
+            services.AddDbContext<LinkCraftContext>(options =>
+                    options.UseSqlServer(Configuration.GetConnectionString("LinkCraftContext")));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
