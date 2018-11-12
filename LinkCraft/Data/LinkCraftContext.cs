@@ -12,5 +12,14 @@ namespace LinkCraft.Data
         }
         
         public DbSet<Experience> Experience { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.Entity<Experience>(entity => {
+                entity.HasIndex(e => e.Code).IsUnique();
+            });
+        }
     }
 }

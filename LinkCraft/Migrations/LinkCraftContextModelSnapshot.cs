@@ -30,10 +30,12 @@ namespace LinkCraft.Migrations
                     b.Property<string>("Url")
                         .IsRequired();
 
-                    b.Property<string>("Username")
-                        .IsRequired();
+                    b.Property<string>("UserId");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
 
                     b.ToTable("Experience");
                 });

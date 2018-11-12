@@ -26,7 +26,8 @@ namespace LinkCraft.Controllers
         [HttpGet]
         public IEnumerable<Experience> GetExperience()
         {
-            return _context.Experience;
+            var owner = User.Identity.Name;
+            return _context.Experience.Where(x=> x.UserId == owner).ToList();
         }
 
         // GET: api/Experiences/5
@@ -38,14 +39,21 @@ namespace LinkCraft.Controllers
                 return BadRequest(ModelState);
             }
 
-            var experience = await _context.Experience.FindAsync(id);
-
-            if (experience == null)
+            try
             {
-                return NotFound();
-            }
+                var experience = await _context.Experience.FindAsync(id);
 
-            return Ok(experience);
+                if (experience == null || experience.UserId != User.Identity.Name)
+                {
+                    return NotFound();
+                }
+
+                return Ok(experience);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Error = ex.Message });
+            }
         }
 
         // PUT: api/Experiences/5
@@ -59,7 +67,12 @@ namespace LinkCraft.Controllers
 
             if (id != experience.Id)
             {
-                return BadRequest();
+                return BadRequest(new { Error = "Ids do not match" });
+            }
+
+            if(experience.UserId != User.Identity.Name)
+            {
+                return BadRequest(new { Error = "You are not allowed to edit this experience" });
             }
 
             _context.Entry(experience).State = EntityState.Modified;
@@ -68,16 +81,9 @@ namespace LinkCraft.Controllers
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch(Exception ex)
             {
-                if (!ExperienceExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return BadRequest(new { Error = ex.Message });
             }
 
             return NoContent();
@@ -85,17 +91,30 @@ namespace LinkCraft.Controllers
 
         // POST: api/Experiences
         [HttpPost]
-        public async Task<IActionResult> PostExperience([FromBody] Experience experience)
+        public async Task<IActionResult> PostExperience([FromBody] PostExperienceViewModel experience)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            _context.Experience.Add(experience);
-            await _context.SaveChangesAsync();
+            var newExperience = new Experience
+            {
+                Code = experience.Code,
+                Url = experience.Url,
+                UserId = User.Identity.Name
+            };
+            try
+            {
+                _context.Experience.Add(newExperience);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Error = ex.Message });
+            }
 
-            return CreatedAtAction("GetExperience", new { id = experience.Id }, experience);
+            return CreatedAtAction("GetExperience", new { id = newExperience.Id }, newExperience);
         }
 
         // DELETE: api/Experiences/5
@@ -111,6 +130,11 @@ namespace LinkCraft.Controllers
             if (experience == null)
             {
                 return NotFound();
+            }
+
+            if(experience.UserId != User.Identity.Name)
+            {
+                return BadRequest(new { Error = "You are not allowed to remove this experiece as you are not the owner" } );
             }
 
             _context.Experience.Remove(experience);

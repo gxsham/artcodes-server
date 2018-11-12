@@ -57,7 +57,7 @@ namespace LinkCraft.Migrations
                     Id = table.Column<Guid>(nullable: false),
                     Code = table.Column<string>(nullable: false),
                     Url = table.Column<string>(nullable: false),
-                    Username = table.Column<string>(nullable: false)
+                    UserId = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -208,6 +208,12 @@ namespace LinkCraft.Migrations
                 column: "NormalizedUserName",
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Experience_Code",
+                table: "Experience",
+                column: "Code",
+                unique: true);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

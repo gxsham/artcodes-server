@@ -49,8 +49,7 @@ namespace JADA.API.Controllers
             }
             catch (Exception ex)
             {
-
-                throw ex;
+                return BadRequest(new { Error = ex.Message });
             }
         }
 
@@ -76,12 +75,11 @@ namespace JADA.API.Controllers
                     return GenerateJwtToken(model.Email, user);
                 }
 
-                return result.Errors;
+                return BadRequest(new { Error = result.Errors });
             }
             catch (Exception ex)
             {
-
-                throw ex;
+                return BadRequest(new { Error = ex.Message });
             }
 
         }

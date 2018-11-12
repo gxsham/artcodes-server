@@ -11,9 +11,7 @@ namespace LinkCraft.Models
         [Required]
         [Url]
         public string Url { get; set; }
-        [Required]
-        [EmailAddress]
-        public string Username { get; set; }
+        public string UserId { get; set; }
         public Experience()
         {
             Id = Guid.NewGuid();

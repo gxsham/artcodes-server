@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LinkCraft.Migrations
 {
     [DbContext(typeof(LinkCraftContext))]
-    [Migration("20181013150703_initial")]
+    [Migration("20181112155322_initial")]
     partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -32,10 +32,12 @@ namespace LinkCraft.Migrations
                     b.Property<string>("Url")
                         .IsRequired();
 
-                    b.Property<string>("Username")
-                        .IsRequired();
+                    b.Property<string>("UserId");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
 
                     b.ToTable("Experience");
                 });
