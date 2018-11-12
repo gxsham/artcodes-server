@@ -56,6 +56,10 @@ namespace JADA.API.Controllers
         [HttpPost]
         public async Task<object> Register([FromBody] RegistrationViewModel model)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             try
             {
                 var user = new User
