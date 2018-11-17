@@ -22,7 +22,13 @@ namespace LinkCraft.Controllers
             _context = context;
         }
 
-        // GET: api/Experiences
+        [AllowAnonymous]
+        [HttpGet("getall")]
+        public IEnumerable<PublicExperience> GetAll()
+        {
+            return _context.Experience.Select(x=> new PublicExperience {Code = x.Code, Url = x.Url}).ToList();
+        }
+
         [HttpGet]
         public IEnumerable<Experience> GetExperience()
         {
@@ -83,7 +89,7 @@ namespace LinkCraft.Controllers
             }
             catch(Exception ex)
             {
-                return BadRequest(new { Error = ex.Message });
+                return BadRequest(new { Error = ex.InnerException.Message });
             }
 
             return NoContent();
