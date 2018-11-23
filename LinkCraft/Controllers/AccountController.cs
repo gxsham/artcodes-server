@@ -31,34 +31,32 @@ namespace JADA.API.Controllers
         }
 
         [HttpPost]
-        public async Task<object> Login([FromBody] LoginViewModel model)
+        public async Task<ResultBaseModel<string>> Login([FromBody] LoginViewModel model)
         {
             try
             {
-
                 var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, false, false);
 
                 if (result.Succeeded)
                 {
                     var appUser = _userManager.Users.SingleOrDefault(r => r.Email == model.Email);
-                    return GenerateJwtToken(model.Email, appUser);
+                    return new ResultBaseModel<string>(GenerateJwtToken(model.Email, appUser), true);
                 }
 
-                return new { Error = "Wrong username and password combination." };
-
+                return new ResultBaseModel<string>( "Wrong username and password combination");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return BadRequest(new { Error = ex.Message });
+                return new ResultBaseModel<string>("Database error");
             }
         }
 
         [HttpPost]
-        public async Task<object> Register([FromBody] RegistrationViewModel model)
+        public async Task<ResultBaseModel<string>> Register([FromBody] RegistrationViewModel model)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return new ResultBaseModel<string>("All fields must be completed");
             }
             try
             {
@@ -76,19 +74,19 @@ namespace JADA.API.Controllers
                 if (result.Succeeded)
                 {
                     await _signInManager.SignInAsync(user, false);
-                    return GenerateJwtToken(model.Email, user);
+                    return new ResultBaseModel<string>(GenerateJwtToken(model.Email, user), true);
                 }
 
-                return BadRequest(new { Error = result.Errors });
+                return new ResultBaseModel<string>("Registration failed. Try different data");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return BadRequest(new { Error = ex.Message });
+                return new ResultBaseModel<string>("Database error");
             }
 
         }
 
-        private object GenerateJwtToken(string email, IdentityUser user)
+        private string GenerateJwtToken(string email, IdentityUser user)
         {
             var claims = new List<Claim>
             {

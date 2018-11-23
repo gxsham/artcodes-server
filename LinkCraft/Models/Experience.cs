@@ -1,9 +1,10 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using LinkCraft.Models.Interfaces;
 
 namespace LinkCraft.Models
 {
-    public class Experience
+    public class Experience : IExperience
     {
         public Guid Id { get; set;}
         [Required]

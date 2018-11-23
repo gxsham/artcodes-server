@@ -1,8 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using LinkCraft.Models.Interfaces;
 
 namespace LinkCraft.Models
 {
-    public class PostExperienceViewModel
+    public class PostExperienceViewModel : IBaseExperience
     {
         [Required]
         public string Code { get; set; }

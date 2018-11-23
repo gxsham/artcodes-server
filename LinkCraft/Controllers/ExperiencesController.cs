@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -24,25 +23,40 @@ namespace LinkCraft.Controllers
 
         [AllowAnonymous]
         [HttpGet("getall")]
-        public IEnumerable<PublicExperience> GetAll()
+        public ResultListModel GetAll()
         {
-            return _context.Experience.Select(x=> new PublicExperience {Code = x.Code, Url = x.Url}).ToList();
+            try
+            {
+                return new ResultListModel(_context.Experience.Select(x => new PublicExperience { Code = x.Code, Url = x.Url }).ToList());
+            }
+            catch (Exception)
+            {
+                return new ResultListModel("Database error");
+            }
         }
 
         [HttpGet]
-        public IEnumerable<Experience> GetExperience()
+        public ResultListModel GetExperience()
         {
-            var owner = User.Identity.Name;
-            return _context.Experience.Where(x=> x.UserId == owner).ToList();
+            try
+            {
+                var owner = User.Identity.Name;
+                return new ResultListModel(_context.Experience.Where(x => x.UserId == owner).ToList());
+            }
+            catch (Exception)
+            {
+                return new ResultListModel("Database error");
+            }
+            
         }
 
         // GET: api/Experiences/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetExperience([FromRoute] Guid id)
+        public async Task<ResultModel> GetExperience([FromRoute] Guid id)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return new ResultModel("Invalid Id");
             }
 
             try
@@ -51,34 +65,34 @@ namespace LinkCraft.Controllers
 
                 if (experience == null || experience.UserId != User.Identity.Name)
                 {
-                    return NotFound();
+                    return new ResultModel("Experience not found");
                 }
 
-                return Ok(experience);
+                return new ResultModel(experience);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return BadRequest(new { Error = ex.Message });
+                return new ResultModel("Database error");
             }
         }
 
         // PUT: api/Experiences/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutExperience([FromRoute] Guid id, [FromBody] Experience experience)
+        public async Task<ResultBaseModel<string>> PutExperience([FromRoute] Guid id, [FromBody] Experience experience)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return new ResultBaseModel<string>("Experience not found");
             }
 
             if (id != experience.Id)
             {
-                return BadRequest(new { Error = "Ids do not match" });
+                return new ResultBaseModel<string>("Ids do not match");
             }
 
             if(experience.UserId != User.Identity.Name)
             {
-                return BadRequest(new { Error = "You are not allowed to edit this experience" });
+                return new ResultBaseModel<string>("You are not allowed to update thi experience");
             }
 
             _context.Entry(experience).State = EntityState.Modified;
@@ -89,19 +103,19 @@ namespace LinkCraft.Controllers
             }
             catch(Exception ex)
             {
-                return BadRequest(new { Error = ex.InnerException.Message });
+                return new ResultBaseModel<string>("Experience not valid");
             }
 
-            return NoContent();
+            return new ResultBaseModel<string>("Experience updated", true);
         }
 
         // POST: api/Experiences
         [HttpPost]
-        public async Task<IActionResult> PostExperience([FromBody] PostExperienceViewModel experience)
+        public async Task<ResultModel> PostExperience([FromBody] PostExperienceViewModel experience)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return new ResultModel("Experience not found");
             }
 
             var newExperience = new Experience
@@ -115,38 +129,38 @@ namespace LinkCraft.Controllers
                 _context.Experience.Add(newExperience);
                 await _context.SaveChangesAsync();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return BadRequest(new { Error = ex.Message });
+                return new ResultModel("Experience not valid");
             }
 
-            return CreatedAtAction("GetExperience", new { id = newExperience.Id }, newExperience);
+            return new ResultModel(experience);
         }
 
         // DELETE: api/Experiences/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteExperience([FromRoute] Guid id)
+        public async Task<ResultModel> DeleteExperience([FromRoute] Guid id)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return new ResultModel("Experience not found");
             }
 
             var experience = await _context.Experience.FindAsync(id);
             if (experience == null)
             {
-                return NotFound();
+                return new ResultModel("Experience not found");
             }
 
             if(experience.UserId != User.Identity.Name)
             {
-                return BadRequest(new { Error = "You are not allowed to remove this experiece as you are not the owner" } );
+                return new ResultModel("You are not allowed to remove this experience");
             }
 
             _context.Experience.Remove(experience);
             await _context.SaveChangesAsync();
 
-            return Ok(experience);
+            return new ResultModel(experience);
         }
 
         private bool ExperienceExists(Guid id)
