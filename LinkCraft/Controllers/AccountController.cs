@@ -1,4 +1,7 @@
-﻿using LinkCraft.Models;
+﻿using LinkCraft.Data;
+using LinkCraft.Models;
+using LinkCraft.Models.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -19,15 +22,48 @@ namespace JADA.API.Controllers
         private readonly SignInManager<User> _signInManager;
         private readonly UserManager<User> _userManager;
         private readonly IConfiguration _configuration;
+        private readonly LinkCraftContext _context;
 
         public AccountController(
             UserManager<User> userManager,
             SignInManager<User> signInManager,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            LinkCraftContext context)
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
-            _configuration = configuration;
+            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+            _signInManager = signInManager ?? throw new ArgumentNullException(nameof(signInManager));
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<ResultBaseModel<IUserProfile>> UserProfile()
+        {
+            try
+            {
+                var user = await _context.FindAsync<User>(User.Identity.Name);
+                if(user == null)
+                {
+                    return new ResultBaseModel<IUserProfile>("User not found");
+                }
+
+                var artcodes = _context.Set<Experience>().Count(x => x.UserId == user.Id);
+                var profile = new UserProfile
+                {
+                    Name = user.Name,
+                    City = user.City,
+                    Country = user.Country,
+                    Username = user.UserName,
+                    CreatedArtCodes = artcodes
+                };
+
+                return new ResultBaseModel<IUserProfile>(profile);
+            }
+            catch (Exception)
+            {
+                return new ResultBaseModel<IUserProfile>("Database error");
+            }
         }
 
         [HttpPost]
@@ -43,7 +79,7 @@ namespace JADA.API.Controllers
                     return new ResultBaseModel<string>(GenerateJwtToken(model.Email, appUser), true);
                 }
 
-                return new ResultBaseModel<string>( "Wrong username and password combination");
+                return new ResultBaseModel<string>("Wrong username and password combination");
             }
             catch (Exception)
             {
@@ -77,7 +113,7 @@ namespace JADA.API.Controllers
                     return new ResultBaseModel<string>(GenerateJwtToken(model.Email, user), true);
                 }
 
-                return new ResultBaseModel<string>("Registration failed. Try different data");
+                return new ResultBaseModel<string>("User with this email already exists");
             }
             catch (Exception)
             {

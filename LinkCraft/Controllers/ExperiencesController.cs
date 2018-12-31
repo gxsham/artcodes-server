@@ -101,9 +101,9 @@ namespace LinkCraft.Controllers
             {
                 await _context.SaveChangesAsync();
             }
-            catch(Exception ex)
+            catch(Exception)
             {
-                return new ResultBaseModel<string>("Experience not valid");
+                return new ResultBaseModel<string>("Experience with this code already exists");
             }
 
             return new ResultBaseModel<string>("Experience updated", true);
@@ -131,7 +131,7 @@ namespace LinkCraft.Controllers
             }
             catch (Exception)
             {
-                return new ResultModel("Experience not valid");
+                return new ResultModel("Experience with this code already exists");
             }
 
             return new ResultModel(experience);
